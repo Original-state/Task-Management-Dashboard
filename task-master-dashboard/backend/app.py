@@ -13,9 +13,9 @@ CORS(app)  # 允许跨域，前后端分离开发必须
 # 初始化数据库
 init_db(app)
 
-# 注册蓝图（稍后添加）
-# from routes import api_bp
-# app.register_blueprint(api_bp, url_prefix="/api")
+# 注册 API 路由蓝图
+from routes import api_bp
+app.register_blueprint(api_bp, url_prefix="/api")
 
 
 @app.route("/api/health")
