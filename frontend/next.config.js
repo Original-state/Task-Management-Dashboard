@@ -1,13 +1,18 @@
 /** @type {import('next').NextConfig} */
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const nextConfig = {
-  // API 代理：将 /api 请求转发到 Flask 后端（开发模式）
+  // 仅本地开发时代理 /api 到 Flask 后端；生产由前端直接请求后端绝对 URL
   async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:5000'}/api/:path*`,
-      },
-    ];
+    if (!API_BASE) {
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'http://127.0.0.1:5000/api/:path*',
+        },
+      ];
+    }
+    return [];
   },
 };
 

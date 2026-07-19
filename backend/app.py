@@ -1,7 +1,7 @@
 """
 Flask 主入口 - 任务管理 API
 本地运行：cd backend && python app.py（监听 5000 端口）
-生产运行：gunicorn app:app --bind 0.0.0.0:$PORT
+Vercel 部署：api/index.py 自动导入此 app 实例
 """
 
 import os
