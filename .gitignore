@@ -1,0 +1,33 @@
+# Node.js
+node_modules/
+.next/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+backend/instance/
+*.egg-info/
+dist/
+
+# 环境变量（包含本地配置和密钥）
+.env
+.env.local
+.env.*.local
+
+# IDE / 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# CodeBuddy（项目辅助数据，不是你的应用代码）
+.codebuddy/
+
+# Vercel
+.vercel/
