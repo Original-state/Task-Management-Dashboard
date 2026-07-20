@@ -14,7 +14,18 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, onDelete, onStatusChange }: TaskCardProps) {
   const handleDelete = () => {
-    if (window.confirm(`确定要删除任务"${task.title}"吗？此操作不可撤销。`)) {
+    console.log("[TaskCard] handleDelete called, id:", task.id, "title:", task.title);
+    // 使用更可靠的确认方式，避免 window.confirm 在某些 WebView 中被静默拦截
+    try {
+      if (window.confirm(`确定要删除任务"${task.title}"吗？此操作不可撤销。`)) {
+        console.log("[TaskCard] 确认删除, 调用 onDelete");
+        onDelete(task.id);
+      } else {
+        console.log("[TaskCard] 用户取消删除");
+      }
+    } catch {
+      // 如果 confirm 不可用，降级为直接删除
+      console.log("[TaskCard] window.confirm 不可用，直接删除");
       onDelete(task.id);
     }
   };
@@ -71,8 +82,9 @@ export default function TaskCard({ task, onDelete, onStatusChange }: TaskCardPro
             📥
           </button>
           <button
+            type="button"
             onClick={handleDelete}
-            className="text-gray-400 hover:text-red-500 transition text-sm"
+            className="text-gray-400 hover:text-red-500 transition text-sm px-1 py-0.5"
             title="删除"
           >
             ✕
