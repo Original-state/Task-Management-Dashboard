@@ -1,5 +1,5 @@
 {
   "functions": {
-    "app.py": { "maxDuration": 30 }
+    "api/index.py": { "maxDuration": 10 }
   }
 }

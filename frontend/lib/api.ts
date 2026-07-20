@@ -8,18 +8,34 @@ import type { Task, CreateTaskPayload, UpdateTaskPayload, ApiResponse } from "./
 // 后端 API 基地址（开发时通过 next.config.js rewrites 代理）
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
-/** 基础请求封装 */
-async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${url}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
+/** 请求超时时间 (ms) */
+const REQUEST_TIMEOUT = 10000;
 
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `请求失败 (HTTP ${res.status})`);
+/** 基础请求封装，10 秒超时 */
+async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+  try {
+    const res = await fetch(`${BASE_URL}${url}`, {
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      ...options,
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || `请求失败 (HTTP ${res.status})`);
+    }
+    return res.json();
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("请求超时，请检查网络或后端服务");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
-  return res.json();
 }
 
 // ========== 任务 API ==========
@@ -66,9 +82,22 @@ export async function deleteTask(id: number): Promise<void> {
 
 /** 导出单个任务（返回 JSON 文本，不含图片默认） */
 export async function exportTask(id: number, includeImages = false): Promise<string> {
-  const res = await fetch(`${BASE_URL}/api/tasks/${id}/export?include_images=${includeImages}`);
-  if (!res.ok) throw new Error("导出失败");
-  return res.text();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  try {
+    const res = await fetch(`${BASE_URL}/api/tasks/${id}/export?include_images=${includeImages}`, {
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error("导出失败");
+    return res.text();
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("导出超时，请重试");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** 导入任务（支持单个或多个） */
